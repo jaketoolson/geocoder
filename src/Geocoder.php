@@ -148,6 +148,12 @@ class Geocoder
                 'partial_match' => isset($result->partial_match) ? $result->partial_match : false ,
                 'place_id' => $result->place_id,
                 'types' => $result->types,
+                'plus_code' => $result->plus_code,
+                'global_code' => $result->plus_code->global_code,
+                'city' => $this->getCity($result->address_components),
+                'state' => $this->getState($result->address_components),
+                'street_number' => $this->getStreetNumber($result->address_components),    
+                'street_name' => $this->getStreetName($result->address_components),
             ];
         }, $response->results);
 
@@ -185,4 +191,34 @@ class Geocoder
             ],
         ];
     }
+
+        protected function getCity(array $addressComponents): string {
+        return $this->getAddressComponentByType($addressComponents, 'postal_code');
+    }
+
+    protected function getState(array $addressComponents): ?string {
+        return $this->getAddressComponentByType($addressComponents, 'administrative_area_level_1');
+    }
+
+
+    protected function getStreetNumber(array $addressComponents): ?string {
+        return $this->getAddressComponentByType($addressComponents, 'street_number');
+    }
+
+    protected function getStreetName(array $addressComponents): ?string {
+        return $this->getAddressComponentByType($addressComponents, 'route');
+    }
+    
+    protected function getAddressComponentByType(array $addressComponents, string $componentName): ?string {
+        $key = null;
+        foreach ($addressComponents as $k => $component) {
+            if (in_array($componentName, $component->types)) {
+                $key = $k;
+                break;
+            }
+        }
+
+        return $key ? $addressComponents[$k]->short_name : null;   
+    }
+    
 }
