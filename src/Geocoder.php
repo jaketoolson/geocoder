@@ -148,8 +148,6 @@ class Geocoder
                 'partial_match' => isset($result->partial_match) ? $result->partial_match : false ,
                 'place_id' => $result->place_id,
                 'types' => $result->types,
-                'plus_code' => $result->plus_code,
-                'global_code' => $result->plus_code->global_code,
                 'city' => $this->getCity($result->address_components),
                 'state' => $this->getState($result->address_components),
                 'street_number' => $this->getStreetNumber($result->address_components),    
@@ -192,7 +190,7 @@ class Geocoder
         ];
     }
 
-        protected function getCity(array $addressComponents): string {
+    protected function getCity(array $addressComponents): ?string {
         return $this->getAddressComponentByType($addressComponents, 'postal_code');
     }
 
