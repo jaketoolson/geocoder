@@ -118,6 +118,7 @@ class Geocoder
 
         $response = $this->client->request('GET', $this->endpoint, $payload);
 
+
         if ($response->getStatusCode() !== 200) {
             throw CouldNotGeocode::couldNotConnect();
         }
@@ -149,8 +150,10 @@ class Geocoder
                 'place_id' => $result->place_id,
                 'types' => $result->types,
                 'city' => $this->getCity($result->address_components),
+//                'postal_code' => $this->getPostalCode($result->address_components),
+//                'postal_code_suffix' => $this->getPostalCodeSuffic($result->address_components),
                 'state' => $this->getState($result->address_components),
-                'street_number' => $this->getStreetNumber($result->address_components),    
+                'street_number' => $this->getStreetNumber($result->address_components),
                 'street_name' => $this->getStreetName($result->address_components),
             ];
         }, $response->results);
@@ -160,12 +163,12 @@ class Geocoder
 
     protected function getRequestPayload(array $parameters): array
     {
-        $parameters = array_merge([
+        $parameters = array_filter(array_merge([
             'key' => $this->apiKey,
             'language' => $this->language,
             'region' => $this->region,
             'bounds' => $this->bounds,
-        ], $parameters);
+        ], $parameters));
 
         if ($this->country) {
             $parameters = array_merge(
@@ -206,7 +209,15 @@ class Geocoder
     protected function getStreetName(array $addressComponents): ?string {
         return $this->getAddressComponentByType($addressComponents, 'route');
     }
-    
+
+    protected function getPostalCode(array $addressComponents): ?string {
+        return $this->getAddressComponentByType($addressComponents, 'postal_code');
+    }
+
+    protected function getPostalCodeSuffic(array $addressComponents): ?string {
+        return $this->getAddressComponentByType($addressComponents, 'postal_code_suffix');
+    }
+
     protected function getAddressComponentByType(array $addressComponents, string $componentName): ?string {
         $key = null;
         foreach ($addressComponents as $k => $component) {
@@ -216,7 +227,7 @@ class Geocoder
             }
         }
 
-        return $key ? $addressComponents[$k]->short_name : null;   
+        return $key ? $addressComponents[$k]->short_name : null;
     }
-    
+
 }
